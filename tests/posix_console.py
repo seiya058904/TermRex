@@ -53,7 +53,8 @@ def check(binary, ending, state_dir):
             proc.send_signal(ending)
         until(master, b"\x1b[?1049l")
         assert proc.wait(timeout=5) == 0
-        assert termios.tcgetattr(slave) == original
+        restored = termios.tcgetattr(slave)
+        assert restored == original, (original, restored)
     finally:
         if proc.poll() is None:
             proc.kill()

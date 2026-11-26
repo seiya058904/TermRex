@@ -3,7 +3,6 @@ use std::{
     io,
     io::Read,
     os::raw::{c_int, c_ulong},
-    process::{Command, Stdio},
     sync::atomic::{AtomicBool, Ordering},
 };
 #[repr(C)]
@@ -13,6 +12,9 @@ struct PollFd {
     revents: i16,
 }
 extern "C" {
+    fn tcgetattr(fd: c_int, state: *mut Termios) -> c_int;
+    fn cfmakeraw(state: *mut Termios);
+    fn tcsetattr(fd: c_int, action: c_int, state: *const Termios) -> c_int;
     fn poll(fds: *mut PollFd, count: usize, timeout: c_int) -> c_int;
     fn ioctl(fd: c_int, request: c_ulong, ...) -> c_int;
     fn signal(sig: c_int, handler: usize) -> usize;
@@ -21,20 +23,33 @@ static STOP: AtomicBool = AtomicBool::new(false);
 extern "C" fn stop(_: c_int) {
     STOP.store(true, Ordering::Relaxed);
 }
-fn stty(args: &[&str]) -> io::Result<String> {
-    let out = Command::new("stty")
-        .args(args)
-        .stdin(Stdio::inherit())
-        .output()?;
-    if !out.status.success() {
-        return Err(io::Error::other(
-            String::from_utf8_lossy(&out.stderr).trim().to_string(),
-        ));
+// Opaque storage for libc's termios. Darwin LP64 uses 72 bytes and glibc
+// x86_64 uses 60. libc alone interprets the fields, including control chars.
+#[repr(C, align(16))]
+#[derive(Clone, Copy)]
+struct Termios([u8; 256]);
+impl Termios {
+    fn current() -> io::Result<Self> {
+        let mut state = Self([0; 256]);
+        if unsafe { tcgetattr(0, &mut state) } < 0 {
+            return Err(io::Error::last_os_error());
+        }
+        Ok(state)
     }
-    Ok(String::from_utf8_lossy(&out.stdout).trim().to_owned())
+    fn apply(&self) -> io::Result<()> {
+        loop {
+            if unsafe { tcsetattr(0, 0, self) } == 0 {
+                return Ok(());
+            }
+            let e = io::Error::last_os_error();
+            if e.kind() != io::ErrorKind::Interrupted {
+                return Err(e);
+            }
+        }
+    }
 }
 pub struct Terminal {
-    original: String,
+    original: Termios,
     pending: Vec<u8>,
     enhanced: bool,
     signals: Vec<(i32, usize)>,
@@ -43,7 +58,7 @@ pub struct Terminal {
 impl Terminal {
     pub fn open() -> io::Result<Self> {
         let mut t = Self {
-            original: stty(&["-g"])?,
+            original: Termios::current()?,
             pending: vec![],
             enhanced: false,
             signals: vec![],
@@ -55,7 +70,9 @@ impl Terminal {
                 t.signals.push((sig, old));
             }
         }
-        stty(&["raw", "-echo", "min", "0", "time", "0"])?;
+        let mut raw = t.original;
+        unsafe { cfmakeraw(&mut raw) };
+        raw.apply()?;
         Ok(t)
     }
     pub fn size(&self) -> io::Result<(usize, usize)> {
@@ -180,7 +197,7 @@ impl Terminal {
 }
 impl Drop for Terminal {
     fn drop(&mut self) {
-        let _ = stty(&[&self.original]);
+        let _ = self.original.apply();
         for &(s, old) in &self.signals {
             unsafe {
                 signal(s, old);

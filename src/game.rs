@@ -51,7 +51,17 @@ impl Obstacle {
             }
     }
     pub fn hits(&self, y: i32, duck: bool) -> bool {
-        if self.x > REX_X + 59 || self.x + self.width() < REX_X {
+        // Chromium trims a one-pixel border on both broad-phase rectangles.
+        let height = match self.kind {
+            Small => 35,
+            Large => 50,
+            Bird => 40,
+        };
+        if self.x >= REX_X + 42
+            || self.x + self.width() - 2 <= REX_X
+            || self.y >= y + 45
+            || self.y + height - 2 <= y
+        {
             return false;
         }
         let parts: &[Box4] = match self.kind {
