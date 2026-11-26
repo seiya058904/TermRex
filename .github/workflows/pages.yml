@@ -44,7 +44,10 @@ jobs:
           cp "target/${{ matrix.target }}/release/${{ matrix.binary }}" "dist/${{ matrix.asset }}"
       - name: Exercise native terminal lifecycle
         if: runner.os != 'Windows'
-        run: python3 tests/tty.py "dist/${{ matrix.asset }}"
+        run: python3 tests/posix_console.py "dist/${{ matrix.asset }}"
+      - name: Exercise Windows Terminal protocol
+        if: runner.os == 'Windows'
+        run: python tests/windows_console.py dist/termrex.exe
       - uses: actions/upload-artifact@v4
         with:
           name: bin-${{ matrix.target }}
