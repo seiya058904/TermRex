@@ -1,0 +1,7 @@
+/target/
+/web/termrex.wasm
+/web/downloads/
+__pycache__/
+*.pyc
+.DS_Store
+

@@ -1,0 +1,15 @@
+[package]
+name = "termrex"
+version = "0.1.0"
+edition = "2021"
+license = "BSD-3-Clause"
+description = "The Chromium offline dinosaur in your terminal"
+
+[lib]
+name = "termrex_core"
+crate-type = ["rlib", "cdylib"]
+
+[profile.release]
+lto = true
+strip = true
+codegen-units = 1
