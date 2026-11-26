@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#131510">
+<meta name="description" content="Play the Chromium offline dinosaur in a native terminal. Try the same Rust engine in your browser and download the portable game.">
+<link rel="icon" href="rex.png">
+<link rel="stylesheet" href="style.css">
+<title>TermRex — The offline dinosaur, in your terminal</title>
+</head>
+<body>
+<header><a class="brand" href="#top"><img src="rex.png" width="28" height="30" alt="">TermRex</a>
+<nav aria-label="Main navigation"><a href="#controls">Controls</a><a href="https://github.com/seiya058904/TermRex">GitHub ↗</a></nav></header>
+<main id="top">
+<section class="intro" aria-labelledby="name"><h1 id="name">TermRex<span aria-hidden="true"></span></h1><p>The offline dinosaur, in your terminal.</p></section>
+<section class="console" aria-labelledby="console-title">
+<div class="titlebar"><h2 id="console-title"><span aria-hidden="true">›_</span> termrex — live demo</h2><span>BRAILLE · 2×4</span></div>
+<div class="display" id="display" tabindex="0" role="group" aria-label="Game viewport. Use Space to jump, S to duck, P to pause and R to restart.">
+<canvas id="game" width="1200" height="344" aria-label="Pixel dinosaur running across a desert horizon">Enable JavaScript to play the demo.</canvas>
+</div>
+<div class="toolbar"><span class="status" role="status" id="status">Loading demo…</span>
+<div class="actions"><button id="motion" aria-label="Pause demo" title="Pause demo">Ⅱ</button><button id="play" class="primary">▶ Play demo</button></div></div>
+<div class="touch" hidden><button data-key="0">Jump</button><button data-key="1">Duck / dive</button></div>
+</section>
+<section class="manual">
+<div class="install"><h2>Run locally</h2><label for="platform">Platform</label>
+<select id="platform"><option value="win">Windows · x64</option><option value="linux">Linux · x64</option><option value="mac">macOS · Apple silicon</option><option value="intel">macOS · Intel</option></select>
+<a class="download" id="download" href="downloads/termrex.exe" download="termrex.exe">Download binary ↓</a>
+<div class="command"><code id="command">.\termrex.exe</code><button id="copy" aria-label="Copy run command" title="Copy run command"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M15 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg></button></div>
+<p class="hint">Run from the folder containing the download.</p>
+</div>
+<div id="controls"><h2>Controls</h2><dl>
+<div><dt><kbd>Space</kbd> <kbd>↑</kbd> <kbd>W</kbd></dt><dd>Jump · hold for height</dd></div>
+<div><dt><kbd>↓</kbd> <kbd>S</kbd></dt><dd>Duck / dive</dd></div>
+<div><dt><kbd>P</kbd> <kbd>R</kbd></dt><dd>Pause / restart</dd></div>
+<div><dt><kbd>M</kbd> <kbd>Q</kbd></dt><dd>Mute / quit in terminal</dd></div>
+</dl></div></section>
+<section class="features" aria-label="Inside the runner">
+<div><h2>Original pixels</h2><p>Chromium’s sprite atlas, from the two-frame stride to the seven phases of the moon.</p></div>
+<div><h2>Native input</h2><p>Release to cut a jump. Press down in midair to dive. Six body boxes handle close calls.</p></div>
+<div><h2>One executable</h2><p>A 60 Hz Rust game loop, Unicode dots and a high score saved on your machine.</p></div>
+</section>
+</main><footer><span>TermRex</span><a href="https://github.com/seiya058904/TermRex#credits">Source & credits ↗</a></footer>
+<script type="module" src="app.js"></script>
+</body></html>

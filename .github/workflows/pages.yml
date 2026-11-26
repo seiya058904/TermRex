@@ -1,0 +1,88 @@
+name: Build, verify and publish
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  native:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            binary: termrex.exe
+            asset: termrex.exe
+          - os: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            binary: termrex
+            asset: termrex-linux-x64
+          - os: macos-15
+            target: aarch64-apple-darwin
+            binary: termrex
+            asset: termrex-macos-arm64
+          - os: macos-15
+            target: x86_64-apple-darwin
+            binary: termrex
+            asset: termrex-macos-x64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build portable game
+        shell: bash
+        run: |
+          rustup update stable --no-self-update
+          rustup target add --toolchain stable "${{ matrix.target }}"
+          cargo +stable test --locked
+          cargo +stable build --locked --release --target "${{ matrix.target }}" --bin termrex
+          mkdir -p dist
+          cp "target/${{ matrix.target }}/release/${{ matrix.binary }}" "dist/${{ matrix.asset }}"
+      - name: Exercise native terminal lifecycle
+        if: runner.os != 'Windows'
+        run: python3 tests/tty.py "dist/${{ matrix.asset }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bin-${{ matrix.target }}
+          path: dist/*
+  site:
+    needs: native
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build browser engine
+        run: |
+          rustup update stable --no-self-update
+          rustup target add --toolchain stable wasm32-unknown-unknown
+          cargo +stable build --locked --release --target wasm32-unknown-unknown --lib
+          cp target/wasm32-unknown-unknown/release/termrex_core.wasm web/termrex.wasm
+          cp LICENSE assets/LICENSE.chromium web/
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: bin-*
+          merge-multiple: true
+          path: web/downloads
+      - name: Verify downloads and publish checksums
+        run: |
+          cd web/downloads
+          sha256sum termrex.exe termrex-linux-x64 termrex-macos-{arm64,x64} > SHA256SUMS.txt
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: web
+  deploy:
+    needs: site
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.pages.outputs.page_url }}
+    steps:
+      - uses: actions/deploy-pages@v4
+        id: pages
