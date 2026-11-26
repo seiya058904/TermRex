@@ -29,3 +29,4 @@ footer{border-top:1px solid var(--rule);justify-content:space-between;color:var(
 @media(pointer:coarse){.touch:not([hidden]){display:flex;gap:8px;padding:0 14px 12px}.touch button{flex:1;touch-action:none}}
 @media(max-width:680px){header{height:56px}nav{gap:16px;font-size:12px}.intro{padding:28px 0 20px}.titlebar,.toolbar{padding:0 10px}.titlebar>span{font-size:8px}.titlebar h2{font-size:12px}.manual,.features{grid-template-columns:1fr;gap:22px}.install{border:0;padding:0}.manual{margin-top:22px}.features{gap:16px}.features h2{font-size:21px}.features p{max-width:52ch}.intro h1{font-size:clamp(62px,15vw,95px)}.status{font-size:11px}.primary{font-size:12px}.manual h2{font-size:25px}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+details{margin-top:9px;font-size:12px;color:var(--muted)}summary{cursor:pointer}details .command{align-items:flex-start;padding:9px;gap:10px}details code{font-size:12px}.command [data-copy]{flex-shrink:0}

@@ -13,24 +13,31 @@ function platformChanged() {
   el("command").textContent = command;
   el("download").href = "downloads/" + file;
   el("download").download = file;
+  const url = "https://seiya058904.github.io/TermRex/downloads/" + file;
+  el("install-command").textContent = el("platform").value === "win"
+    ? 'Invoke-WebRequest -ErrorAction Stop -Uri "' + url + '" -OutFile termrex.exe; .\\termrex.exe'
+    : 'curl -fLO "' + url + '" && ' + command;
 }
 if (/Linux/.test(navigator.platform)) el("platform").value = "linux";
 if (/Mac/.test(navigator.platform)) el("platform").value = "mac";
 platformChanged();
 el("platform").onchange = platformChanged;
-const copyIcon = el("copy").innerHTML;
-el("copy").onclick = async () => {
-  try {
-    await navigator.clipboard.writeText(el("command").textContent);
-    el("copy").textContent = "Copied";
-    setTimeout(() => el("copy").innerHTML = copyIcon, 1200);
-  } catch {
-    const range = new Range();
-    range.selectNodeContents(el("command"));
-    getSelection().removeAllRanges();
-    getSelection().addRange(range);
-  }
-};
+for (const button of document.querySelectorAll("[data-copy]")) {
+  const original = button.innerHTML;
+  button.onclick = async () => {
+    const code = el(button.dataset.copy);
+    try {
+      await navigator.clipboard.writeText(code.textContent);
+      button.textContent = "Copied";
+      setTimeout(() => button.innerHTML = original, 1200);
+    } catch {
+      const range = new Range();
+      range.selectNodeContents(code);
+      getSelection().removeAllRanges();
+      getSelection().addRange(range);
+    }
+  };
+}
 
 async function start() {
   const response = await fetch("termrex.wasm");
@@ -78,10 +85,11 @@ async function start() {
     ctx.fillStyle=color(engine.stat(6));
     ctx.fillRect(0,0,game.width,game.height);
     ctx.fillStyle=color(engine.stat(5));
-    ctx.font="bold 19px Consolas, monospace";ctx.textAlign="right";
+    const hudSize = Math.min(34, Math.max(19, Math.round(12 * game.width / game.clientWidth)));
+    ctx.font="bold "+hudSize+"px Consolas, monospace";ctx.textAlign="right";
     const flash=engine.stat(3);
     const score=flash && Math.floor((72-flash)/12)%2===0 ? "     " : pad(engine.stat(0));
-    ctx.fillText("HI "+pad(engine.stat(1))+"  "+score,game.width-20,24);
+    ctx.fillText("HI "+pad(engine.stat(1))+"  "+score,game.width-20,hudSize);
     for(let i=0;i<cells.length;i++){
       const val=cells[i]; if(!val) continue;
       const x=(i%cols)*8,y=Math.floor(i/cols)*16+31;
