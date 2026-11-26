@@ -198,6 +198,16 @@ impl Terminal {
 impl Drop for Terminal {
     fn drop(&mut self) {
         let _ = self.original.apply();
+        #[cfg(target_os = "macos")]
+        {
+            // XNU sets PENDIN when returning to canonical input. FIONREAD runs
+            // ttypend under the restored discipline without consuming shell input.
+            const FIONREAD: c_ulong = 0x4004667f;
+            let mut available: c_int = 0;
+            unsafe {
+                ioctl(0, FIONREAD, &mut available);
+            }
+        }
         for &(s, old) in &self.signals {
             unsafe {
                 signal(s, old);
