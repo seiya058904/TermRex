@@ -61,7 +61,7 @@ async function start() {
     if (demo) for (let i=0;i<242;i++) engine.step(1);
     lastTime = 0; elapsed = 0;
     el("display").classList.toggle("manual-mode", !demo);
-    document.querySelector(".touch").hidden = demo;
+    document.querySelector(".touch").hidden = demo || navigator.maxTouchPoints === 0;
     sync();
   }
   function sync() {
