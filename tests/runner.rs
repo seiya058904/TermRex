@@ -52,7 +52,7 @@ fn milestones_and_rendering() {
         if old != g.score() && [699, 710, 899, 911, 1410].contains(&g.score()) {
             levels.push(g.night);
         }
-        if g.frame % 120 == 0 {
+        if g.frame.is_multiple_of(120) {
             r.draw(&g);
             assert!(r.cells.iter().any(|v| *v != 0));
         }

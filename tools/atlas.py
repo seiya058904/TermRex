@@ -15,4 +15,3 @@ for y in range(image.height):
             if red < 240:
                 planes[1][index] |= 1 << (x % 8)
 (assets / "chromium.bits").write_bytes(b"".join(planes))
-

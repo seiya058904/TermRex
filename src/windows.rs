@@ -1,5 +1,19 @@
 use super::*;
-use std::io;
+use std::{
+    fs::File,
+    io,
+    os::windows::io::AsRawHandle,
+    sync::atomic::{AtomicBool, Ordering},
+};
+static INTERRUPTED: AtomicBool = AtomicBool::new(false);
+extern "system" fn interrupt(kind: u32) -> i32 {
+    if kind <= 1 {
+        INTERRUPTED.store(true, Ordering::Relaxed);
+        1
+    } else {
+        0
+    }
+}
 type Handle = *mut std::ffi::c_void;
 #[repr(C)]
 #[derive(Default, Copy, Clone)]
@@ -19,6 +33,7 @@ struct Info {
 }
 #[link(name = "kernel32")]
 extern "system" {
+    fn SetConsoleCtrlHandler(handler: extern "system" fn(u32) -> i32, add: i32) -> i32;
     fn GetStdHandle(which: u32) -> Handle;
     fn GetConsoleMode(h: Handle, v: *mut u32) -> i32;
     fn SetConsoleMode(h: Handle, v: u32) -> i32;
@@ -41,6 +56,7 @@ pub struct Terminal {
     im: u32,
     om: u32,
     cp: u32,
+    active: Option<File>,
     held: [bool; 256],
 }
 impl Terminal {
@@ -52,6 +68,7 @@ impl Terminal {
                 im: 0,
                 om: 0,
                 cp: GetConsoleOutputCP(),
+                active: None,
                 held: [false; 256],
             };
             // Read both modes before constructing a guard that owns any restoration.
@@ -68,13 +85,21 @@ impl Terminal {
             check(SetConsoleMode(t.input, (im | 0x88) & !(0x247)))?;
             check(SetConsoleMode(t.out, om | 5))?;
             check(SetConsoleOutputCP(65001))?;
+            check(SetConsoleCtrlHandler(interrupt, 1))?;
             Ok(t)
         }
+    }
+    pub fn bind_viewport(&mut self) -> io::Result<()> {
+        self.active = Some(File::open("CONOUT$")?);
+        Ok(())
     }
     pub fn size(&self) -> io::Result<(usize, usize)> {
         unsafe {
             let mut i = Info::default();
-            check(GetConsoleScreenBufferInfo(self.out, &mut i))?;
+            check(GetConsoleScreenBufferInfo(
+                self.active.as_ref().map_or(self.out, File::as_raw_handle),
+                &mut i,
+            ))?;
             Ok((
                 (i.window[2] - i.window[0] + 1) as usize,
                 (i.window[3] - i.window[1] + 1) as usize,
@@ -83,6 +108,9 @@ impl Terminal {
     }
     pub fn poll(&mut self) -> io::Result<Vec<Event>> {
         unsafe {
+            if INTERRUPTED.load(Ordering::Relaxed) {
+                return Ok(vec![Event::Key(Button::Quit, true)]);
+            }
             let mut n = 0;
             check(GetNumberOfConsoleInputEvents(self.input, &mut n))?;
             let mut events = Vec::new();
@@ -121,7 +149,8 @@ impl Terminal {
                     button(match v {
                         38 => 57352,
                         40 => 57353,
-                        _ => v as u32,
+                        32 | 87 | 83 | 80 | 82 | 77 | 81 => v as u32,
+                        _ => return None,
                     })
                 };
                 let Some(b) = map(vk) else { continue };
@@ -148,6 +177,7 @@ impl Drop for Terminal {
             SetConsoleOutputCP(self.cp);
             SetConsoleMode(self.input, self.im);
             SetConsoleMode(self.out, self.om);
+            SetConsoleCtrlHandler(interrupt, 0);
         }
     }
 }

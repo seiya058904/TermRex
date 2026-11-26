@@ -108,7 +108,7 @@ impl Raster {
         };
         self.sprite(848 + sx, 2, w, 47, REX_X, g.y);
         self.cells.fill(0);
-        for (y, line) in self.pixels.chunks_exact(600).enumerate() {
+        for (y, line) in self.pixels.as_chunks::<600>().0.iter().enumerate() {
             let py = self.ymap[y];
             let row = py / 4 * self.cols;
             for (x, &ink) in line.iter().enumerate() {
@@ -129,7 +129,7 @@ pub fn colors(night: f64) -> ([u8; 3], [u8; 3]) {
     (blend(0), blend(1))
 }
 pub fn hud(g: &Game) -> String {
-    let value = if g.flash > 0 && (72 - g.flash) / 12 % 2 == 0 {
+    let value = if g.flash > 0 && ((72 - g.flash) / 12).is_multiple_of(2) {
         "     ".to_string()
     } else {
         format!("{:05}", g.score())

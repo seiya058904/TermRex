@@ -85,6 +85,8 @@ fn run() -> io::Result<()> {
     let mut t = Terminal::open()?;
     let (enter, leave) = t.protocol();
     let mut screen = Screen::open(enter, leave)?;
+    #[cfg(windows)]
+    t.bind_viewport()?;
     let seed = if demo {
         4577
     } else {
