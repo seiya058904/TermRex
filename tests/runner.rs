@@ -76,3 +76,30 @@ fn pause_restart_and_collision() {
     g.key(Key::Restart, true);
     assert_eq!((g.score(), g.best, g.speed), (0, best, 6.));
 }
+
+// Recorded from Trex.startJump/endJump/updateJump in Chromium 90 at 60 Hz.
+// A release delivered before the next tick must change that very tick.
+#[test]
+fn chromium_release_trajectory() {
+    for (speed, hold, expected_top) in [
+        (6., 4, 31),
+        (6., 6, 15),
+        (9., 4, 30),
+        (9., 6, 13),
+        (13., 4, 28),
+        (13., 6, 11),
+    ] {
+        let mut game = Game::new(1, 0);
+        game.speed = speed;
+        game.key(Key::Jump, true);
+        let mut top = GROUND;
+        for tick in 0..45 {
+            if tick == hold {
+                game.key(Key::Jump, false);
+            }
+            game.tick();
+            top = top.min(game.y);
+        }
+        assert_eq!(top, expected_top);
+    }
+}

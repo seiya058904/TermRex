@@ -195,6 +195,9 @@ impl Game {
                     self.diving = false;
                     self.velocity = -10. - self.speed / 10.;
                 }
+                if !pressed && self.airborne && self.y < GROUND - 30 {
+                    self.velocity = self.velocity.max(-5.);
+                }
                 self.jump_held = pressed;
             }
             Key::Down => {
