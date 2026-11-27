@@ -13,7 +13,7 @@ Zero-dependency Rust port of the Chromium **90.0.4430.212** offline dinosaur for
 - Preserve Chromium 90.0.4430.212 physics/geometry and keep `LICENSE` (BSD-3-Clause) + `assets/LICENSE.chromium` intact (`--license` embeds both; CI copies both to `web/`).
 - Minimum terminal viewport is `81×14`; `Screen` and `Terminal` `Drop` guards must always restore cursor, alt-screen, and console/termios state.
 - If `assets/chromium.png` changes, regenerate `assets/chromium.bits` with `python tools/atlas.py` (requires Pillow).
-- If `src/game.rs`, `src/render.rs`, or `src/lib.rs` changes, rebuild and commit/sync `web/termrex.wasm` (`cargo build --locked --release --target wasm32-unknown-unknown --lib`).
+- `web/termrex.wasm` is gitignored and built dynamically by `.github/workflows/pages.yml`. Only rebuild and copy it locally when serving `web/` via `http.server` (`cargo build --locked --release --lib --target wasm32-unknown-unknown`, then copy `target/wasm32-unknown-unknown/release/termrex_core.wasm` to `web/termrex.wasm`).
 
 ## Verification
 - `cargo test --locked`: unit tests and `tests/runner.rs`.
