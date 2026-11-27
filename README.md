@@ -12,8 +12,8 @@
 
 <p>
   <img src="https://img.shields.io/badge/Rust-zero%20deps-d9e54a?style=flat-square&amp;labelColor=242620" alt="Zero-dependency Rust">
+  <img src="https://img.shields.io/badge/size-~255%20KB%20exe%20%C2%B7%20~49%20KB%20wasm-86b865?style=flat-square&amp;labelColor=242620" alt="About 255 KB native executable and 49 KB WebAssembly module">
   <img src="https://img.shields.io/badge/display-2%C3%974%20Braille-e7e8dd?style=flat-square&amp;labelColor=242620" alt="2 by 4 Braille dot cells">
-  <img src="https://img.shields.io/badge/target-Native%20%2B%20WASM-86b865?style=flat-square&amp;labelColor=242620" alt="Native and WebAssembly">
   <a href="https://github.com/seiya058904/TermRex/actions/workflows/pages.yml"><img src="https://github.com/seiya058904/TermRex/actions/workflows/pages.yml/badge.svg" alt="Build, verify and publish"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-BSD--3--Clause-a9ae9b?style=flat-square&amp;labelColor=242620" alt="BSD 3-Clause"></a>
 </p>
@@ -32,7 +32,7 @@
   <a href="#development">🛠️ Development</a>
 </p>
 
-<p><sub>PURE RUST &nbsp;·&nbsp; ZERO CRATE DEPENDENCIES &nbsp;·&nbsp; 60 HZ FIXED TICK &nbsp;·&nbsp; WINDOWS · LINUX · MACOS · BROWSER</sub></p>
+<p><sub>PURE RUST &nbsp;·&nbsp; ZERO CRATE DEPENDENCIES &nbsp;·&nbsp; ~255 KB WINDOWS EXE / ~49 KB WASM &nbsp;·&nbsp; 60 HZ FIXED TICK &nbsp;·&nbsp; WINDOWS · LINUX · MACOS · BROWSER</sub></p>
 
 </div>
 <!-- project:end -->
@@ -49,7 +49,7 @@
 
 > **No game engine. No external crates. No separate runtime.**
 >
-> One portable binary renders a 600 × 150 desert scene straight into terminal Braille cells at 60 Hz, with identical Rust logic powering the [WebAssembly demo](https://seiya058904.github.io/TermRex/).
+> A **~255 KB** portable Windows binary (and **~49 KB** WebAssembly engine) built with LTO, stripped symbols, and 1-bit sprite masks—rendering a 600 × 150 desert scene straight into terminal Braille cells at 60 Hz, with identical Rust logic powering the [live browser demo](https://seiya058904.github.io/TermRex/).
 
 > [!NOTE]
 > TermRex is an independent port of the Chromium offline runner (**90.0.4430.212**). Visual atlas, geometry, and movement rules are adapted from Chromium's pinned `offline.js` and 1× sprite sheet, with upstream notices preserved in [assets/LICENSE.chromium](assets/LICENSE.chromium).
