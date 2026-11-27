@@ -1,65 +1,145 @@
 <!-- project:start -->
-# TermRex
+<div align="center">
 
-The Chromium offline dinosaur, in your terminal. A small native Rust executable turns the original desert sprites into Unicode Braille dots. The playable website runs the same simulation and pixel renderer through WebAssembly.
+<h1>🦖 TermRex</h1>
 
-**[Play the live demo](https://seiya058904.github.io/TermRex/)** · [Download](#run-locally) · [Controls](#controls)
-<!-- project:end -->
+<p><strong>The Chromium offline dinosaur, in your terminal.</strong></p>
 
-<p align="center">
-  <a href="https://seiya058904.github.io/TermRex/"><img src="web/terminal.gif" width="952" alt="A real TermRex Windows console run. A Braille dinosaur jumps over a cactus as the ground scrolls and the score advances."></a>
+<p>
+  A zero-dependency native Rust executable that turns the original desert sprites into 2×4 Unicode Braille dots.<br>
+  The playable website runs the exact same simulation and pixel renderer through WebAssembly.
 </p>
-<p align="center">
-  <img src="https://img.shields.io/badge/Rust-native-d9e54a?style=flat-square&amp;labelColor=242620" alt="Native Rust">
+
+<p>
+  <img src="https://img.shields.io/badge/Rust-zero%20deps-d9e54a?style=flat-square&amp;labelColor=242620" alt="Zero-dependency Rust">
   <img src="https://img.shields.io/badge/display-2%C3%974%20Braille-e7e8dd?style=flat-square&amp;labelColor=242620" alt="2 by 4 Braille dot cells">
+  <img src="https://img.shields.io/badge/target-Native%20%2B%20WASM-86b865?style=flat-square&amp;labelColor=242620" alt="Native and WebAssembly">
   <a href="https://github.com/seiya058904/TermRex/actions/workflows/pages.yml"><img src="https://github.com/seiya058904/TermRex/actions/workflows/pages.yml/badge.svg" alt="Build, verify and publish"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-BSD--3--Clause-a9ae9b?style=flat-square&amp;labelColor=242620" alt="BSD 3-Clause"></a>
 </p>
 
-The recording samples the live Windows console character buffer and renders its cells in Cascadia Mono. In the browser, select **Play demo** to take over from the autopilot.
+<p>
+  <a href="https://seiya058904.github.io/TermRex/"><strong>▶ Play Live Demo</strong></a>
+  &nbsp;·&nbsp;
+  <a href="#run-locally">⬇ Run Locally</a>
+  &nbsp;·&nbsp;
+  <a href="#highlights">✨ Highlights</a>
+  &nbsp;·&nbsp;
+  <a href="#controls">⌨️ Controls</a>
+  &nbsp;·&nbsp;
+  <a href="#inside-the-runner">⚙️ Inside the Runner</a>
+  &nbsp;·&nbsp;
+  <a href="#development">🛠️ Development</a>
+</p>
 
-## Run locally
+<p><sub>PURE RUST &nbsp;·&nbsp; ZERO CRATE DEPENDENCIES &nbsp;·&nbsp; 60 HZ FIXED TICK &nbsp;·&nbsp; WINDOWS · LINUX · MACOS · BROWSER</sub></p>
 
-Choose a portable binary and run the command in its download folder. The game works offline and needs no game engine, package manager or separate runtime. Open a UTF-8 terminal with a Braille-capable monospace font, at least **81 columns × 14 rows**. More columns preserve finer sprite detail.
+</div>
+<!-- project:end -->
+
+<p align="center">
+  <a href="https://seiya058904.github.io/TermRex/">
+    <img src="web/terminal.gif" width="952" alt="A real TermRex Windows console run. A Braille dinosaur jumps over a cactus as the ground scrolls and the score advances.">
+  </a>
+  <br>
+  <sub>LIVE WINDOWS CONSOLE CAPTURE (CASCADIA MONO) &nbsp;·&nbsp; SELECT <strong>PLAY DEMO</strong> IN THE BROWSER TO TAKE OVER FROM AUTOPILOT</sub>
+</p>
+
+---
+
+> **No game engine. No external crates. No separate runtime.**
+>
+> One portable binary renders a 600 × 150 desert scene straight into terminal Braille cells at 60 Hz, with identical Rust logic powering the [WebAssembly demo](https://seiya058904.github.io/TermRex/).
+
+> [!NOTE]
+> TermRex is an independent port of the Chromium offline runner (**90.0.4430.212**). Visual atlas, geometry, and movement rules are adapted from Chromium's pinned `offline.js` and 1× sprite sheet, with upstream notices preserved in [assets/LICENSE.chromium](assets/LICENSE.chromium).
+
+<a id="highlights"></a>
+## ✨ Highlights
+
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <h3>⠁ 2×4 Braille Pixel Engine</h3>
+      <p><sub>600×150 LOGICAL FRAME · ADAPTIVE COLUMNS</sub></p>
+      <p>Projects the original 1× sprite sheet (idle blink, run, duck, jump, crash, cacti, birds, clouds, terrain, and 7 moon phases) onto Unicode Braille dot cells. Wider terminals preserve finer detail.</p>
+    </td>
+    <td width="50%" valign="top">
+      <h3>⚡ Chromium-Faithful Physics</h3>
+      <p><sub>60 HZ FIXED TICK · VARIABLE JUMP · DIVE</sub></p>
+      <p>Starts at 6 px/tick, accelerates by 0.001, and caps at 13. Early key release trims upward velocity, pressing down in midair triggers a 3× dive, and overlapping head/body/leg boxes handle close passes.</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <h3>🖥️ Safe Terminal Lifecycle</h3>
+      <p><sub>DIFFED ROW WRITES · RAII RESTORATION</sub></p>
+      <p>Batches only changed rows per frame and pauses cleanly if resized below <code>81 × 14</code>. Dropping the screen or input guards restores the shell on exit, I/O error, or panic unwinding.</p>
+    </td>
+    <td width="50%" valign="top">
+      <h3>🌐 Shared Core in WebAssembly</h3>
+      <p><sub>NATIVE + WASM PARITY · AUTOPILOT DEMO</sub></p>
+      <p>The exact same <code>termrex_core</code> crate compiles to <code>wasm32-unknown-unknown</code> for the browser demo, complete with autopilot takeover and touch controls.</p>
+    </td>
+  </tr>
+</table>
+
+<a id="run-locally"></a>
+## 📦 Run Locally
+
+Download a portable binary and run it in a **UTF-8 terminal** with a Braille-capable monospace font, at least **81 columns × 14 rows**.
 
 | Platform | Binary | Run |
 | --- | --- | --- |
-| Windows x64 | [termrex.exe](https://seiya058904.github.io/TermRex/downloads/termrex.exe) | `.\termrex.exe` |
-| Linux x64 (glibc, Ubuntu 22.04 or newer equivalent) | [termrex-linux-x64](https://seiya058904.github.io/TermRex/downloads/termrex-linux-x64) | `chmod +x termrex-linux-x64 && ./termrex-linux-x64` |
-| macOS Apple silicon | [termrex-macos-arm64](https://seiya058904.github.io/TermRex/downloads/termrex-macos-arm64) | `chmod +x termrex-macos-arm64 && ./termrex-macos-arm64` |
-| macOS Intel | [termrex-macos-x64](https://seiya058904.github.io/TermRex/downloads/termrex-macos-x64) | `chmod +x termrex-macos-x64 && ./termrex-macos-x64` |
+| **Windows x64** | [termrex.exe](https://seiya058904.github.io/TermRex/downloads/termrex.exe) | `.\termrex.exe` |
+| **Linux x64** *(glibc, Ubuntu 22.04+)* | [termrex-linux-x64](https://seiya058904.github.io/TermRex/downloads/termrex-linux-x64) | `chmod +x termrex-linux-x64 && ./termrex-linux-x64` |
+| **macOS Apple silicon** | [termrex-macos-arm64](https://seiya058904.github.io/TermRex/downloads/termrex-macos-arm64) | `chmod +x termrex-macos-arm64 && ./termrex-macos-arm64` |
+| **macOS Intel** | [termrex-macos-x64](https://seiya058904.github.io/TermRex/downloads/termrex-macos-x64) | `chmod +x termrex-macos-x64 && ./termrex-macos-x64` |
 
-The downloads are unsigned. Every Pages deployment builds its binaries from the same commit as the demo and publishes [SHA-256 checksums](https://seiya058904.github.io/TermRex/downloads/SHA256SUMS.txt).
+<sub>The downloads are unsigned. Every Pages deployment builds its binaries from the same commit as the live demo and publishes <a href="https://seiya058904.github.io/TermRex/downloads/SHA256SUMS.txt">SHA-256 checksums</a>.</sub>
 
-With Rust 1.89 or newer, install directly from source:
+Or install from source with Rust **1.89+** (`--locked`):
 
 ```sh
 cargo install --locked --git https://github.com/seiya058904/TermRex
 termrex
 ```
 
-## Controls
+<a id="controls"></a>
+## ⌨️ Controls & CLI
 
 | Key | Action |
 | --- | --- |
-| Space, ↑, W | Start or jump. Release early for a shorter arc. |
-| ↓, S | Duck while grounded. Press in the air to dive. |
-| P | Pause or resume. |
-| R | Start a fresh run. |
-| M | Toggle the milestone bell. Use `--mute` to start silently. |
-| Q, Ctrl+C | Return to the shell. |
+| <kbd>Space</kbd>, <kbd>↑</kbd>, <kbd>W</kbd> | Start or jump. Release early for a shorter arc. |
+| <kbd>↓</kbd>, <kbd>S</kbd> | Duck while grounded. Press in midair to dive. |
+| <kbd>P</kbd> | Pause or resume. |
+| <kbd>R</kbd> | Start a fresh run. |
+| <kbd>M</kbd> | Toggle the milestone bell (or pass `--mute`). |
+| <kbd>Q</kbd>, <kbd>Ctrl+C</kbd> | Quit and restore the terminal. |
 
-**Key release.** Windows uses native console key events. On macOS and Linux, terminals implementing the kitty keyboard protocol can report press, repeat and release. On a press-only terminal, Space gives a short jump and ↑ or W gives a full jump. Repeated down events renew a short duck timeout. The system repeat delay can briefly interrupt a long duck on those terminals.
+<details>
+<summary><strong>Key-release behavior &amp; CLI flags</strong></summary>
 
-## Inside the runner
+- **Key release:** Windows uses native console key events. On macOS and Linux, terminals supporting the kitty keyboard protocol report press, repeat, and release. On press-only terminals, `Space` performs a short jump, `↑`/`W` performs a full jump, and repeated down events renew a short duck timeout.
+- **CLI flags:**
+  - `termrex --demo` — watch the built-in autopilot run.
+  - `termrex --mute` — start without the milestone bell.
+  - `termrex --benchmark` — drive real keyboard actions to 1001 points and report loop FPS, 99th-percentile/max frame intervals, and missed deadlines.
+  - `termrex --license` — print both BSD 3-Clause and Chromium notices.
 
-- **Pixel rendering.** The original 1× sprite sheet supplies the idle blink, two running and ducking poses, jump, crash, grouped cacti, three flight heights, clouds, two terrain strips and seven moon phases. A 600 × 150 logical frame is projected onto the available 2 × 4 dot cells.
-- **Movement.** A fixed 60 Hz tick starts at 6 px per tick, accelerates by 0.001 and caps at 13. Jump velocity starts at −10 with Chromium’s speed adjustment. Gravity is 0.6, early release caps upward velocity at −5, and a dive uses the 3× displacement multiplier. Overlapping head, body and leg boxes handle close passes.
-- **Distance.** Every 100 points flashes the score three times. Each 700-point boundary starts a fading night lasting about 200 displayed points. Birds enter the obstacle pool at speed 8.5.
-- **Terminal lifecycle.** Each frame batches changed rows into one write. Resizing below the minimum freezes the simulation. Dropping the screen and input guards restores the shell on return, an I/O error or Rust panic unwinding.
-- **Local records.** Native high scores use a locked, atomically replaced file at `%LOCALAPPDATA%\termrex\best` or `$XDG_STATE_HOME/termrex/best` (default `~/.local/state/termrex/best`). Browser scores stay in that browser. Autopilot runs use a separate, unsaved score.
+</details>
 
-## Development
+<a id="inside-the-runner"></a>
+## ⚙️ Inside the Runner
+
+| Component | Details |
+| --- | --- |
+| **Movement** | 60 Hz fixed tick; speed `6 → 13` (`+0.001/tick`); jump `-10` with speed adjustment; gravity `0.6`; early-release cap `-5`; `3×` dive multiplier. |
+| **Milestones** | Every `100` points flashes the score 3×. Every `700` points triggers a fading night cycle (~`200` displayed points). Birds spawn from speed `8.5`. |
+| **Score Storage** | Native best scores use a locked, atomically replaced file at `%LOCALAPPDATA%\termrex\best` or `$XDG_STATE_HOME/termrex/best` (default `~/.local/state/termrex/best`). Browser scores stay local; autopilot runs are unsaved. |
+
+<a id="development"></a>
+## 🛠️ Development
 
 ```sh
 cargo test --locked
@@ -67,12 +147,17 @@ cargo run --release -- --demo
 cargo run --release -- --benchmark
 ```
 
-The benchmark drives real keyboard actions through the game simulation and paints to an interactive terminal until 1001 points. It reports loop FPS, 99th-percentile and maximum frame intervals, and missed deadlines. Font rendering and display refresh depend on the terminal host.
+To rebuild and serve the WebAssembly site locally:
 
-To serve the site locally, install the Rust `wasm32-unknown-unknown` target, run `cargo build --release --lib --target wasm32-unknown-unknown`, copy `target/wasm32-unknown-unknown/release/termrex_core.wasm` to `web/termrex.wasm`, and run `python -m http.server --directory web`. The deployment workflow stages the four platform downloads.
+```sh
+rustup target add wasm32-unknown-unknown
+cargo build --locked --release --lib --target wasm32-unknown-unknown
+cp target/wasm32-unknown-unknown/release/termrex_core.wasm web/termrex.wasm
+python -m http.server --directory web
+```
 
-## Credits
+<a id="credits"></a>
+## 📄 Credits & License
 
-TermRex is an independent port of the Chromium offline runner. The visual atlas and adapted geometry and movement come from Chromium **90.0.4430.212**. The pinned resources are [offline.js](https://github.com/chromium/chromium/blob/90.0.4430.212/components/neterror/resources/offline.js) and the [1× sprite sheet](https://github.com/chromium/chromium/blob/90.0.4430.212/components/neterror/resources/images/default_100_percent/offline/100-offline-sprite.png).
-
-Original project code uses the [BSD 3-Clause license](LICENSE). Chromium material retains its [upstream notice](assets/LICENSE.chromium). Run `termrex --license` for both notices.
+- **Upstream source:** Chromium **90.0.4430.212** ([offline.js](https://github.com/chromium/chromium/blob/90.0.4430.212/components/neterror/resources/offline.js) and [1× sprite sheet](https://github.com/chromium/chromium/blob/90.0.4430.212/components/neterror/resources/images/default_100_percent/offline/100-offline-sprite.png)).
+- **Licenses:** Original project code is licensed under [BSD 3-Clause](LICENSE); Chromium assets retain their [upstream notice](assets/LICENSE.chromium). Run `termrex --license` to view both.
